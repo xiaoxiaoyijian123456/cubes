@@ -1,0 +1,54 @@
+var products = {
+ec: new RegExp('HP01|HP02|AM11|AM10|AM06|AM07|AM08|TP02|DP01|AM09', 'i'),
+    fc: new RegExp('DC26|DC36|DC48|DC52|V6TopDog|V6Car|V6Motorhead|V6Absolute|V8Absolute|V8Fluffy|V6Fluffy|V6Fluffy＋|V6Origin|CY22|V6Mattress|DC45', 'i'),
+    pc: new RegExp('HD01', 'i'),
+};
+var subwayItemIncludeKeywords = {
+    '净化': new RegExp('AM11|HP01|HP02', 'i'),
+    '风扇': new RegExp('AM06|AM07|AM08|TP02|DP01', 'i'),
+    '取暖器': new RegExp('AM09', 'i'),
+    '加湿器': new RegExp('AM10', 'i'),
+    '吸尘器': new RegExp('V6TopDog|V6Car|V6Motorhead|V6Origin|V6Fluffy|V6Fluffy＋|V6Absolute|V8Absolute|V8Fluffy|DC45', 'i'),
+    '车载吸尘器': new RegExp('V6Car'),
+    '圆筒吸尘器': new RegExp('CY22|DC26|DC36|DC48|DC52', 'i'),
+    '除螨仪': new RegExp('V6Mattress', 'i'),
+    '吹风机': new RegExp('HD01', 'i')
+};
+var zuanshiCampaignIncludeKeywords = ['吸尘器', '除螨', '车载', '吹风机', '净化', '全'];
+var subwayItemIncludeKeywordReports = {};
+var zuanshiCampaignIncludeKeywordReports = {};
+
+var subwayItemReports = reports.subwayItemReports;
+subwayItemReports = subwayItemReports.split("\n");
+subwayItemReports.shift();
+for (var i in subwayItemReports) {
+    if (subwayItemReports[i]) {
+        subwayItemReports[i] = subwayItemReports[i].split(',');
+        if (subwayItemReports[i][1].indexOf('皇冠车手') > -1 || subwayItemReports[i][2].indexOf('干手器') > -1 || subwayItemReports[i][2].indexOf('配件') > -1) {
+            delete subwayItemReports[i];
+        } else {
+            for (var j in subwayItemIncludeKeywords) {
+                if ( ! subwayItemIncludeKeywordReports[j]) {
+                    subwayItemIncludeKeywordReports[j] = [];
+                }
+
+                if (subwayItemIncludeKeywords[j].test(subwayItemReports[i][2].replace(/\s/ig, ''))) {
+                    if (j === '吸尘器' && (subwayItemReports[i][2].replace(/\s/ig, '').indexOf('车载吸尘器') > -1 || subwayItemReports[i][2].replace(/\s/ig, '').indexOf('圆筒吸尘器') > -1)) {
+                        continue;
+                    }
+                    subwayItemIncludeKeywordReports[j].push(subwayItemReports[i]);
+                }
+            }
+
+            if (products.ec.test(subwayItemReports[i][2].replace(/\s/ig, ''))) {
+                ecRpt.subway.items.push(subwayItemReports[i]);
+            } else if (products.fc.test(subwayItemReports[i][2].replace(/\s/ig, '')) && subwayItemReports[i][2].indexOf('＋') === -1) {
+                fcRpt.subway.items.push(subwayItemReports[i]);
+            } else if (products.pc.test(subwayItemReports[i][2].replace(/\s/ig, ''))) {
+                pcRpt.subway.items.push(subwayItemReports[i]);
+            }
+        }
+    } else {
+        delete subwayItemReports[i];
+    }
+}

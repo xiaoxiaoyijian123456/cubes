@@ -1,0 +1,122 @@
+{
+  "report":["client_simba_daily_report", "client_zhizuan_daily_report"],
+  "_comment": "客户日报模板（dyson戴森官方旗舰店使用）",
+  "cubes_group": {
+    "cubes_list":[
+      {
+        "_comment": "直通车CUBES",
+        "cube_list" : [
+          {
+            "name": "client_simba_daily_report",
+            "_comment": "直通车用户每月的日报明细",
+            "display":"{\"title\":\"#####CLIENT_NAME#####_直通车#####YMONTH#####日报\"}",
+            "source": "cube",
+            "store": "client_simba_daily_report_tmp",
+            "dimensions":"日期, 周数据, 展现量, 点击量, CTR, CPC, 花费, 订单数, 成交金额, 购物车, ROI, CVR, CPU, CPM",
+            "mappings":[
+              "日期;record_on",
+              "周数据;'第'||week_id||'周'",
+              "展现量;impressions",
+              "点击量;click",
+              "CTR;CASE WHEN impressions>0 THEN ROUND(100.0 * click / impressions, 4) ELSE 0 END",
+              "CPC;CASE WHEN click>0 THEN ROUND(cost / click / 100.0, 4) ELSE 0 END",
+              "花费;cost/100.0",
+              "订单数;pay_count",
+              "成交金额;pay/100.0",
+              "购物车;carttotal",
+              "ROI;CASE WHEN cost>0 THEN ROUND(100.0 * pay / cost, 4) ELSE 0 END",
+              "CVR;CASE WHEN click>0 THEN ROUND(100.0 * pay_count / click, 4) ELSE 0 END",
+              "CPU;CASE WHEN pay_count>0 THEN ROUND(cost / pay_count / 100.0, 4) ELSE 0 END",
+              "CPM;CASE WHEN impressions>0 THEN ROUND(1000.0 * cost / impressions / 100.0, 4) ELSE 0 END"
+            ],
+            "orderby":["日期, ASC"]
+          },
+          {
+            "name": "client_simba_daily_report_tmp",
+            "_comment": "生成临时CUBE",
+            "source": "mysql",
+            "store": "skyline.simba_client_rpt_daily",
+            "dimensions":"record_on, week_id",
+            "mappings":[
+              "week_id;skyline.week_of_year(record_on)"
+            ],
+            "aggregates": [
+              ["SUM",
+                "impressions;impressions",
+                "click;click",
+                "cost;cost",
+                "direct_pay_count + indirect_pay_count;pay_count",
+                "direct_pay + indirect_pay;pay",
+                "carttotal;carttotal"
+              ]
+            ],
+            "filter": [
+              [
+                "record_on;between;#####START_DATE#####;#####END_DATE#####"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "_comment": "智钻CUBES",
+        "cube_list" : [
+          {
+            "name": "client_zhizuan_daily_report",
+            "_comment": "智钻用户每月的日报明细",
+            "display":"{\"title\":\"#####CLIENT_NAME#####_智钻#####YMONTH#####日报\"}",
+            "source": "cube",
+            "store": "client_zhizuan_daily_report_tmp",
+            "dimensions":"日期, 周数据, 展现量, 点击量, CTR, CPC, 花费, 订单数, 成交金额, 购物车, ROI, CVR, CPU, CPM",
+            "mappings":[
+              "日期;record_on",
+              "周数据;'第'||week_id||'周'",
+              "展现量;impressions",
+              "点击量;click",
+              "CTR;CASE WHEN impressions>0 THEN ROUND(100.0 * click / impressions, 4) ELSE 0 END",
+              "CPC;CASE WHEN click>0 THEN ROUND(cost / click / 100.0, 4) ELSE 0 END",
+              "花费;cost/100.0",
+              "订单数;pay_count",
+              "成交金额;pay/100.0",
+              "购物车;cart",
+              "ROI;CASE WHEN cost>0 THEN ROUND(100.0 * pay / cost, 4) ELSE 0 END",
+              "CVR;CASE WHEN click>0 THEN ROUND(100.0 * pay_count / click, 4) ELSE 0 END",
+              "CPU;CASE WHEN pay_count>0 THEN ROUND(cost / pay_count / 100.0, 4) ELSE 0 END",
+              "CPM;CASE WHEN impressions>0 THEN ROUND(1000.0 * cost / impressions / 100.0, 4) ELSE 0 END"
+            ],
+            "orderby":["日期, ASC"]
+          },
+          {
+            "name": "client_zhizuan_daily_report_tmp",
+            "_comment": "生成临时CUBE",
+            "source": "mysql",
+            "store": "skyline.zhizuan_client_rpt_daily",
+            "dimensions":"record_on, week_id",
+            "mappings":[
+              "week_id;skyline.week_of_year(record_on)"
+            ],
+            "aggregates": [
+              ["SUM",
+                "impressions;impressions",
+                "uv;uv",
+                "click;click",
+                "cost;cost",
+                "cart;cart",
+                "fav_item_count;fav_item_count",
+                "fav_shop_count;fav_shop_count",
+                "gmv_amt;gmv_amt",
+                "gmv_count;gmv_count",
+                "pay;pay",
+                "pay_count;pay_count"
+              ]
+            ],
+            "filter": [
+              ["record_on;between;#####START_DATE#####;#####END_DATE#####"
+              ]
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

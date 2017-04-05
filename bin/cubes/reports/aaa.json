@@ -1,0 +1,145 @@
+{
+  "report":[
+      "02_01_client_simba_adgroup_report_ec",
+      "02_01_client_simba_adgroup_report_fc",
+      "02_01_client_simba_adgroup_report_pc"],
+  "_comment": "客户汇总报表模板（dyson戴森官方旗舰店使用）",
+  "cubes_group": {
+  "_comment": "直通车 & 钻展子分类表现",
+  "cube_list" : [
+    {
+      "name": "client_simba_item_report",
+      "_comment": "直通车子分类表现",
+      "source": "cube",
+      "store": "client_simba_item_report_tmp",
+      "dimensions":"平台, Impression, Click, CTR, Spend, CPC, Order_, Sale, Cart, ROI, CVR, CPU",
+      "mappings":[
+        "渠道;'直通车'",
+        "DD;item",
+        "Impression;impressions",
+        "Click;click",
+        "CTR;CASE WHEN impressions>0 THEN ROUND(100.0 * click / impressions, 4) ELSE 0 END",
+        "Spend;cost/100.0",
+        "CPC;CASE WHEN click>0 THEN ROUND(cost / click / 100.0, 4) ELSE 0 END",
+        "Order_;pay_count",
+        "Sale;pay/100.0",
+        "Cart;carttotal",
+        "ROI;CASE WHEN cost>0 THEN ROUND(100.0 * pay / cost, 4) ELSE 0 END",
+        "CVR;CASE WHEN click>0 THEN ROUND(100.0 * pay_count / click, 4) ELSE 0 END",
+        "CPU;CASE WHEN pay_count>0 THEN ROUND(cost / pay_count / 100.0, 4) ELSE 0 END"
+      ]
+    },
+    {
+      "name": "client_simba_item_report_tmp",
+      "_comment": "生成临时CUBE",
+      "source": "mysql",
+      "store": "skyline.simba_adgroup_rpt_daily,r",
+      "join": [
+        {
+          "type":"inner join",
+          "store": "skyline.simba_adgroups, ad",
+          "on": [
+            "ad.id;=;r.adgroup_id"
+          ]
+        },
+        {
+          "type":"inner join",
+          "store": "skyline.simba_items, i",
+          "on": [
+            "i.id;=;ad.num_iid"
+          ]
+        }
+      ],
+      "dimensions": "item",
+      "aggregates": [
+        ["SUM",
+          "impressions;impressions",
+          "click;click",
+          "cost;cost",
+          "direct_pay_count + indirect_pay_count;pay_count",
+          "direct_pay + indirect_pay;pay",
+          "carttotal;carttotal"
+        ]
+      ],
+      "filter": [
+        [
+          "r.record_on;between;#####START_DATE#####;#####END_DATE#####"
+        ]
+      ],
+      "tags": {
+        "item": [
+          "净化;f3;REGEXP;.*AM11|HP01|HP02.*",
+          "风扇;f3;REGEXP;.*AM06|AM07|AM08|TP02|DP01.*",
+          "取暖器;f3;REGEXP;.*AM09.*",
+          "加湿器;f3;REGEXP;.*AM10.*",
+          "吸尘器;f3;REGEXP;.*V6TopDog|V6Car|V6Motorhead|V6Origin|V6Fluffy|V6Fluffy＋|V6Absolute|V8Absolute|V8Fluffy|DC45.*",
+          "车载吸尘器;f3;REGEXP;.*V6Car.*",
+          "圆筒吸尘器;f3;REGEXP;.*CY22|DC26|DC36|DC48|DC52.*",
+          "除螨仪;f3;REGEXP;.*V6Mattress.*",
+          "吹风机;f3;REGEXP;.*HD01.*"
+        ]
+      }
+    },
+    {
+      "name": "client_zhizuan_item_report",
+      "_comment": "钻展子分类表现",
+      "source": "cube",
+      "store": "client_zhizuan_item_report_tmp",
+      "dimensions":"渠道, DD, Impression, Click, CTR, Spend, CPC, Order_, Sale, Cart, ROI, CVR, CPU",
+      "mappings":[
+        "渠道;'钻展'",
+        "DD;item",
+        "Impression;impressions",
+        "Click;click",
+        "CTR;CASE WHEN impressions>0 THEN ROUND(100.0 * click / impressions, 4) ELSE 0 END",
+        "Spend;cost/100.0",
+        "CPC;CASE WHEN click>0 THEN ROUND(cost / click / 100.0, 4) ELSE 0 END",
+        "Order_;pay_count",
+        "Sale;pay/100.0",
+        "Cart;cart",
+        "ROI;CASE WHEN cost>0 THEN ROUND(100.0 * pay / cost, 4) ELSE 0 END",
+        "CVR;CASE WHEN click>0 THEN ROUND(100.0 * pay_count / click, 4) ELSE 0 END",
+        "CPU;CASE WHEN pay_count>0 THEN ROUND(cost / pay_count / 100.0, 4) ELSE 0 END"
+      ]
+    },
+    {
+      "name": "client_zhizuan_item_report_tmp",
+      "_comment": "生成临时CUBE",
+      "source": "mysql",
+      "store": "skyline.zhizuan_campaign_rpt_daily",
+      "dimensions": "item",
+      "aggregates": [
+        ["SUM",
+          "impressions;impressions",
+          "uv;uv",
+          "click;click",
+          "cost;cost",
+          "cart;cart",
+          "fav_item_count;fav_item_count",
+          "fav_shop_count;fav_shop_count",
+          "gmv_amt;gmv_amt",
+          "gmv_count;gmv_count",
+          "pay;pay",
+          "pay_count;pay_count"
+        ]
+      ],
+      "filter": [
+        [
+          "record_on;between;#####START_DATE#####;#####END_DATE#####"
+        ]
+      ],
+      "tags": {
+        "item": [
+          "吸尘器;campaign_name;REGEXP;.*吸尘器.*",
+          "除螨;campaign_name;REGEXP;.*除螨.*",
+          "车载;campaign_name;REGEXP;.*车载.*",
+          "吹风机;campaign_name;REGEXP;.*吹风机.*",
+          "净化;campaign_name;REGEXP;.*净化.*",
+          "圆筒;campaign_name;REGEXP;.*圆筒.*",
+          "取暖;campaign_name;REGEXP;.*取暖.*"
+        ]
+      }
+    }
+  ]
+  }
+}

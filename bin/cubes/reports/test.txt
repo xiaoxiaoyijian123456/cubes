@@ -1,0 +1,12 @@
+CREATE TABLE skyline.`client_report_tpl` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `client_id` int(10) unsigned NOT NULL,
+  `tpl_type` tinyint(1) unsigned NOT NULL,
+  `cubes_tpl` text,
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `client_id` (`client_id`),
+  KEY `tpl_type` (`tpl_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
